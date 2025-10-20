@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #F8FAFC;
+    color: #1E293B;
+  }
+
+  #app {
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  /* 按钮样式 */
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-all duration-base cursor-pointer;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary text-white hover:bg-primary-dark;
+    @apply focus:ring-primary-light;
+  }
+
+  .btn-secondary {
+    @apply btn bg-gray-200 text-text-primary hover:bg-gray-300;
+  }
+
+  .btn-success {
+    @apply btn bg-success text-white hover:bg-green-600;
+  }
+
+  .btn-danger {
+    @apply btn bg-danger text-white hover:bg-red-600;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1 text-sm;
+  }
+
+  /* 卡片样式 */
+  .card {
+    @apply bg-bg-secondary rounded-lg shadow-md p-md transition-shadow duration-base;
+    @apply hover:shadow-hover;
+  }
+
+  /* 输入框样式 */
+  .input {
+    @apply w-full px-4 py-2 border border-border rounded-md;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+    @apply transition-all duration-base;
+  }
+
+  .textarea {
+    @apply input resize-none;
+  }
+
+  .select {
+    @apply input cursor-pointer;
+  }
+
+  /* 徽章样式 */
+  .badge {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+  }
+
+  .badge-research {
+    @apply badge bg-blue-100 text-blue-800;
+  }
+
+  .badge-course {
+    @apply badge bg-green-100 text-green-800;
+  }
+
+  .badge-life {
+    @apply badge bg-purple-100 text-purple-800;
+  }
+
+  .badge-pending {
+    @apply badge bg-gray-100 text-gray-800;
+  }
+
+  .badge-in-progress {
+    @apply badge bg-yellow-100 text-yellow-800;
+  }
+
+  .badge-completed {
+    @apply badge bg-success/10 text-success;
+  }
+
+  .badge-low {
+    @apply badge bg-gray-100 text-gray-600;
+  }
+
+  .badge-medium {
+    @apply badge bg-orange-100 text-orange-600;
+  }
+
+  .badge-high {
+    @apply badge bg-red-100 text-red-600;
+  }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* 动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 响应式隐藏类 */
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .desktop-hidden {
+    display: none !important;
+  }
+}
