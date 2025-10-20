@@ -165,6 +165,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useTaskStore } from '@/stores/taskStore'
+import { statisticsAPI } from '@/api'
 import dayjs from 'dayjs'
 
 const taskStore = useTaskStore()
@@ -221,16 +222,39 @@ const markAsCompleted = async (task) => {
   await taskStore.updateTaskStatus(task.id, 'completed')
 }
 
+const fetchWeeklyStats = async () => {
+  try {
+    // 获取本周的开始和结束日期
+    const startOfWeek = dayjs().startOf('week').add(1, 'day') // 周一
+    const endOfWeek = dayjs().endOf('week').add(1, 'day') // 周日
+
+    // 获取学习统计
+    const learningStats = await statisticsAPI.getLearning({
+      start_date: startOfWeek.format('YYYY-MM-DD'),
+      end_date: endOfWeek.format('YYYY-MM-DD')
+    })
+
+    // 设置学习时长
+    stats.value.weekHours = learningStats.total?.total_hours || 0
+  } catch (error) {
+    console.error('获取学习统计失败:', error)
+    stats.value.weekHours = 0
+  }
+}
+
 onMounted(async () => {
   await taskStore.fetchTasks()
 
-  // 计算本周统计
-  const startOfWeek = dayjs().startOf('week')
+  // 计算本周完成任务数
+  const startOfWeek = dayjs().startOf('week').add(1, 'day')
   const completedThisWeek = taskStore.tasks.filter(task =>
     task.status === 'completed' &&
+    task.completed_at &&
     dayjs(task.completed_at).isAfter(startOfWeek)
   )
   stats.value.weekCompleted = completedThisWeek.length
-  stats.value.weekHours = Math.floor(Math.random() * 40) + 10 // 示例数据，需要从学习记录获取
+
+  // 获取本周学习时长
+  await fetchWeeklyStats()
 })
 </script>
