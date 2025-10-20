@@ -2,6 +2,24 @@
 
 一个专为研究生设计的全栈任务管理系统，支持科研任务跟踪、学习进度记录、论文阅读管理和实验计划制定。
 
+## ⚠️ 重要配置说明
+
+### 端口配置
+- **后端端口**: `3001` (原3000端口已改为3001)
+- **前端端口**: `5173` (开发环境)
+
+### 生产环境配置
+- **后端API域名**: `https://taskapi.aihubzone.cn`
+- **前端访问**: 前端会自动根据环境访问对应的后端地址
+  - 开发环境: 通过Vite代理访问 `localhost:3001`
+  - 生产环境: 直接访问 `https://taskapi.aihubzone.cn/api`
+
+### 环境变量
+项目使用环境变量管理配置，详见：
+- 后端: `backend/.env`
+- 前端开发: `frontend/.env.development`
+- 前端生产: `frontend/.env.production`
+
 ## 功能特性
 
 ### 核心功能
@@ -73,8 +91,13 @@ cd backend
 # 安装依赖
 npm install
 
-# 配置环境变量（已在.env文件中配置）
-# 确认.env文件包含正确的数据库配置
+# 配置环境变量
+# 编辑 .env 文件，确认以下配置：
+# PORT=3001  (注意：已改为3001端口)
+# DB_HOST=49.235.74.98
+# DB_USER=connect_4c8c
+# DB_PASSWORD=zhjh0704
+# DB_NAME=task_management
 
 # 启动后端服务
 npm start
@@ -83,7 +106,7 @@ npm start
 npm run dev
 ```
 
-后端将在 `http://localhost:3000` 运行
+后端将在 `http://localhost:3001` 运行
 
 ### 4. 前端配置
 
@@ -96,9 +119,16 @@ npm install
 
 # 启动开发服务器
 npm run dev
+
+# 生产环境构建
+npm run build
 ```
 
 前端将在 `http://localhost:5173` 运行
+
+**重要说明**：
+- 开发环境：前端通过Vite代理访问 `http://localhost:3001`
+- 生产环境：前端直接访问 `https://taskapi.aihubzone.cn/api`
 
 ### 5. 访问应用
 打开浏览器访问: `http://localhost:5173`

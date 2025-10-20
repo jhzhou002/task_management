@@ -1,13 +1,33 @@
 import axios from 'axios'
 
+// 根据环境动态设置API地址
+const getBaseURL = () => {
+  // 优先使用环境变量
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL
+  }
+
+  // 生产环境：使用完整域名
+  if (import.meta.env.PROD) {
+    return 'https://taskapi.aihubzone.cn/api'
+  }
+
+  // 开发环境：使用代理
+  return '/api'
+}
+
 const api = axios.create({
-  baseURL: '/api',
-  timeout: 10000
+  baseURL: getBaseURL(),
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 })
 
 // 请求拦截器
 api.interceptors.request.use(
   config => {
+    // 可以在这里添加token等认证信息
     return config
   },
   error => {
@@ -22,6 +42,34 @@ api.interceptors.response.use(
   },
   error => {
     console.error('API Error:', error)
+
+    // 统一错误处理
+    if (error.response) {
+      // 服务器返回错误状态码
+      const { status, data } = error.response
+
+      switch (status) {
+        case 404:
+          console.error('请求的资源不存在')
+          break
+        case 500:
+          console.error('服务器内部错误')
+          break
+        case 502:
+        case 503:
+          console.error('服务器暂时不可用')
+          break
+        default:
+          console.error(data?.error || '请求失败')
+      }
+    } else if (error.request) {
+      // 请求已发出但未收到响应
+      console.error('网络连接失败，请检查网络')
+    } else {
+      // 其他错误
+      console.error('请求配置错误')
+    }
+
     return Promise.reject(error)
   }
 )

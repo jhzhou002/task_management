@@ -55,14 +55,15 @@ cd task-backend/backend
 编辑 `/www/wwwroot/task-backend/.env` 文件：
 
 ```env
-PORT=3000
+PORT=3001
 DB_HOST=localhost
 DB_USER=connect_4c8c
 DB_PASSWORD=zhjh0704
 DB_NAME=task_management
 ```
 
-注意：
+**注意**：
+- 端口已改为 **3001**（因为3000被占用）
 - 如果MySQL在同一服务器，使用 `localhost`
 - 如果使用远程数据库，填写实际IP地址
 
@@ -103,7 +104,7 @@ pm2 save
 ```
 
 #### 2.5 验证后端
-访问: `http://your-server-ip:3000/health`
+访问: `http://your-server-ip:3001/health`
 
 应该返回: `{"status":"ok","timestamp":"..."}`
 
@@ -114,14 +115,17 @@ pm2 save
 ```bash
 cd frontend
 
-# 修改API地址（如果需要）
-# 编辑 src/api/index.js，将 baseURL 改为实际后端地址
+# 确认环境变量配置
+# .env.production 文件应包含：
+# VITE_API_BASE_URL=https://taskapi.aihubzone.cn/api
 
 # 构建生产版本
 npm run build
 ```
 
 构建完成后，`dist` 目录包含所有静态文件。
+
+**重要提示**：前端已配置为生产环境自动使用 `https://taskapi.aihubzone.cn/api` 作为后端地址
 
 #### 3.2 创建网站
 1. 宝塔面板 -> 网站 -> 添加站点
@@ -142,10 +146,13 @@ scp -r frontend/dist/* root@your-server:/www/wwwroot/task-frontend/
 #### 3.4 配置Nginx
 点击网站 -> 设置 -> 配置文件，添加以下配置：
 
+**注意**：由于前端已直接配置后端域名，Nginx无需反向代理。如果需要通过前端域名代理后端API，可选择配置。
+
+**方案1：前端直接访问后端域名（推荐）**
 ```nginx
 server {
     listen 80;
-    server_name yourdomain.com;  # 修改为实际域名
+    server_name yourdomain.com;  # 前端域名
     root /www/wwwroot/task-frontend;
     index index.html;
 
@@ -158,9 +165,35 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # API反向代理
+    # 静态资源缓存
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf)$ {
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+**方案2：通过前端域名代理后端（可选）**
+如果希望前后端使用同一域名，添加以下配置：
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+    root /www/wwwroot/task-frontend;
+    index index.html;
+
+    # Gzip压缩
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+    # 前端路由配置
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API反向代理（注意改为3001端口）
     location /api {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://localhost:3001;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -177,6 +210,44 @@ server {
         add_header Cache-Control "public, immutable";
     }
 }
+```
+
+**后端域名配置（taskapi.aihubzone.cn）**
+同时需要为后端配置域名和SSL：
+```nginx
+server {
+    listen 80;
+    listen 443 ssl http2;
+    server_name taskapi.aihubzone.cn;
+
+    # SSL证书配置（如果有）
+    # ssl_certificate /path/to/cert.pem;
+    # ssl_certificate_key /path/to/key.pem;
+
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+
+        # CORS配置（如果需要跨域）
+        add_header Access-Control-Allow-Origin * always;
+        add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, PATCH, OPTIONS' always;
+        add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
+
+        if ($request_method = 'OPTIONS') {
+            return 204;
+        }
+    }
+}
+```
+
+保存并重载Nginx：
 ```
 
 保存并重载Nginx：
